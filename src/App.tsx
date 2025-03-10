@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Article } from "./types.ts";
+import { Article } from "./types";
 import { Card, Container, Row, Col } from "react-bootstrap";
-import { articles } from "./articles.ts";
+import { articles } from "./articles";
 
-const Result = ({ result }) => {
+const Result: React.FC<{ result: string }> = ({ result }) => {
   if (!result) return null;
 
   const alertClass = result.includes("✅") ? "alert-success" : "alert-danger";
@@ -15,17 +15,17 @@ const Result = ({ result }) => {
   );
 };
 
-function NewGameButton({ onClick }) {
+function NewGameButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       className="btn btn-online-primary"
       onClick={onClick}
       style={{
         position: "fixed",
-        bottom: "20px",
+        bottom: "20px", // Adjust this value to control the button's vertical position
         left: "50%",
-        transform: "translateX(-50%)",
-        marginBottom: "0",
+        transform: "translateX(-50%)", // Center the button horizontally
+        marginBottom: "0", // Remove any margin
       }}
     >
       Fresh Set
@@ -39,26 +39,26 @@ function Heading() {
       <div
         style={{
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: "1rem",
+          alignItems: "center", // Vertically center the image and text
+          justifyContent: "center", // Center the content horizontally
+          marginBottom: "1rem", // Slightly bigger bottom margin for more spacing
         }}
       >
         <img
           src="Fakipedia's_F.svg.png"
           alt="Fakipedia Logo"
           style={{
-            width: "50px",
-            height: "auto",
-            margin: "-5px -5px 4px 0",
+            width: "50px", // Increased logo size to make it bigger
+            height: "auto", // Keep aspect ratio
+            margin: "-5px -5px 4px 0", // Adjust margin for better alignment
           }}
         />
         <h2
           style={{
             fontFamily: "Georgia, serif",
-            fontSize: "3rem",
-            fontWeight: "normal",
-            color: "black",
+            fontSize: "3rem", // Larger font size for a bolder title
+            fontWeight: "normal", // Keep subtle weight for elegance
+            color: "black", // Darker color for a minimalist look
           }}
         >
           akipedia
@@ -66,41 +66,58 @@ function Heading() {
       </div>
       <h5 style={{ textAlign: "center" }}>
         Can you spot the{" "}
-        <span style={{ fontWeight: "bold" }}>FAKE article</span>{" "}
+        <span
+          style={{
+            fontWeight: "bold",
+          }}
+        >
+          FAKE article
+        </span>{" "}
         from the{" "}
-        <span style={{ fontWeight: "bold" }}>REAL ones</span>?
+        <span
+          style={{
+            fontWeight: "bold",
+          }}
+        >
+          REAL ones
+        </span>
+        ?
       </h5>
     </>
   );
 }
 
 export default function App() {
-  const [articleList, setArticleList] = useState([]);
-  const [selectedArticle, setSelectedArticle] = useState(null);
-  const [correctArticle, setCorrectArticle] = useState(null);
+  const [articleList, setArticleList] = useState<Article[]>([]);
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [correctArticle, setCorrectArticle] = useState<Article | null>(null);
   const [result, setResult] = useState<string>("");
 
   useEffect(() => {
     fetchArticles();
   }, []);
 
+  // Fetch articles and randomly shuffle the selection
   const fetchArticles = () => {
-    let newArticleList = [];
-    let newFakeArticle = null;
+    let newArticleList: Article[] = [];
+    let newFakeArticle: Article | null = null;
 
     do {
+      // Shuffle the articles and pick 3 real articles
       const realArticles = articles
         .filter((article) => !article.isFake)
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 3);
+        .sort(() => 0.5 - Math.random()) // Shuffle the real articles
+        .slice(0, 3); // Take only 3 real articles
 
+      // Find 1 fake article and randomize it
       const fakeArticles = articles.filter((article) => article.isFake);
       const fakeArticle =
         fakeArticles[Math.floor(Math.random() * fakeArticles.length)];
 
+      // Combine the 3 real articles and the 1 fake article
       newArticleList = [...realArticles, fakeArticle]
         .filter(Boolean)
-        .sort(() => 0.5 - Math.random());
+        .sort(() => 0.5 - Math.random()); // Shuffle again to randomize order
 
       newFakeArticle = fakeArticle || null;
     } while (
@@ -109,12 +126,13 @@ export default function App() {
       )
     );
 
-    setArticleList(newArticleList);
-    setCorrectArticle(newFakeArticle);
-    setResult("");
+    setArticleList(newArticleList as Article[]); // Set the final list of 4 articles
+    setCorrectArticle(newFakeArticle); // Set the fake article
+    setResult(""); // Clear any previous result when fetching new articles
   };
 
-  const handleSelect = (article) => {
+  // Handle selecting an article
+  const handleSelect = (article: Article) => {
     setSelectedArticle(article);
 
     if (article.isFake) {
@@ -123,6 +141,7 @@ export default function App() {
         fetchArticles();
       }, 1500);
     } else {
+      // Open the real article URL if it is not fake (open in a new tab)
       window.open(article.url, "_blank");
       setResult("❌ Oops! That's a real article!");
     }
